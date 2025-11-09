@@ -2,7 +2,7 @@ import fetch from "node-fetch";
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
-    return res.status(405).json({ message: "Only POST requests are allowed." });
+    return res.status(405).json({ message: "Only POST requests allowed." });
   }
 
   const userInput = req.body?.query;
@@ -20,25 +20,16 @@ export default async function handler(req, res) {
       body: JSON.stringify({
         model: "gpt-4o-mini",
         messages: [
-          {
-            role: "system",
-            content: "You are Trulie, an AI fact-checker and reliability analyzer."
-          },
+          { role: "system", content: "You are Trulie, a fact-checking assistant." },
           { role: "user", content: userInput }
         ]
       })
     });
 
     const data = await response.json();
-
-    if (!data.choices?.[0]) {
-      return res.status(500).json({ message: "No response from OpenAI." });
-    }
-
-    res.status(200).json({ result: data.choices[0].message.content });
+    return res.status(200).json({ result: data.choices?.[0]?.message?.content || "No output" });
   } catch (error) {
-    console.error("API Error:", error);
-    res.status(500).json({ error: error.message });
+    console.error(error);
+    return res.status(500).json({ error: error.message });
   }
 }
-
